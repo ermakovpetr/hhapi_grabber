@@ -3,7 +3,7 @@ import json
 import urllib2
 import pymongo
 
-start_vacancy_id = 9520126  # 9777248
+start_vacancy_id = 9777248
 prefix_url = 'https://api.hh.ru/vacancies/'
 client = pymongo.MongoClient('localhost', 27017)
 db = client['hh']
@@ -16,8 +16,10 @@ def get_vacancy(v_id):
     vacancy = json.loads(the_page)
     return vacancy
 
+query_result = collection.aggregate([{"$group": {"_id": 0, "minVacanciesId": {"$min": "$id"}}}])
+if query_result["ok"] == 1:
+    start_vacancy_id = int(query_result["result"][0]["minVacanciesId"]) - 1
 
-collection.remove()
 for vacancy_id in range(start_vacancy_id, 0, -1):
     try:
         print vacancy_id
